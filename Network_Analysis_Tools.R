@@ -36,6 +36,7 @@ clean_data <- function(df_count, real_zeros=TRUE, missing_thresh=4, fill_missing
     
   #Remove columns with more than missing_thresh missing values
   df_out <- df_count[,which(colSums(is.na(df_count)) < missing_thresh)]
+  
     
   if (fill_missing==TRUE){
     col_avgs <- colMeans(df_out, na.rm=TRUE)

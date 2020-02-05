@@ -16,24 +16,55 @@ dane<-fread("C:/Users/Monik/Documents/GitHub/sredni_sygnal_mozgu/pliki/summarize
 
 dane[,idx:=NULL]
 dane[,group_id:=NULL]
-dane[,name:=NULL]
 
 parents<-fread("C:/Users/Monik/Documents/GitHub/sredni_sygnal_mozgu/pliki/parents.txt", header = FALSE)
 setnames(parents, c("V1", "V2"), c("abbrev", "parent"))
 dane<-merge(dane, parents, by = "abbrev", sort = FALSE)
 dane[, is_parent:= abbrev %in% unique(dane$parent) ]
+```
+
+```{r kategorie Marzeny}
+kategorie<-c("Cortical subplate", "Cortical plate", "Striatum", "Pallidum", "Thalamus", "Hypothalamus", "Midbrain", "Hindbrain")
+kat<-unique(dane[name %in% kategorie]$abbrev) #skroty nazw powyzej
+
+for(k0 in kat) { #po kolei dla kazdej kategorii
+  k=k0
+  indx=dane[abbrev==k, which=TRUE]
+  d<-dane[indx]$depth[1]
+  
+  while(d<10) {
+    new_indx=dane[parent %in% k, which=TRUE]
+    indx=c(indx, new_indx)
+    k<-unique(c(k, dane[indx]$abbrev))
+    d<-d+1
+  }
+  
+ dane[indx, category:=k0]
+  
+}
+
+dane[,category:=as.factor(category)]
 
 ```
 
 ```{r make list}
-dane_wybrane<-dane[depth==5]
+#print(head(dane))
+dane_wybrane<-dane[category!="" &(depth==5 | (depth<5 & !is_parent))]
+dane_wybrane[,c("name", "depth", "parent", "is_parent"):=NULL]
+
+#print(head(dane_wybrane))
+
 lista.danych<-split(dane_wybrane, by="group_label", keep.by=FALSE)
+print(head(lista.danych[[1]]))
 lista.danych<-lapply(lista.danych, 
                      function(x) {
                        transpose(dcast(x, abbrev ~ case_id, value.var = "cell_count"), make.names = "abbrev")})
 lista.danych<-lapply(lista.danych, function(x) setDF(x))
 lista.danych <- lapply(lista.danych, clean_data, missing_thresh=3, fill_missing=FALSE, real_zeros=FALSE)
+```
 
+
+```{r}
 rm(dane)
 rm(dane_wybrane)
 ```
