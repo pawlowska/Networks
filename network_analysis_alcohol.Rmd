@@ -79,20 +79,51 @@ rm(dane_wybrane)
 ```{r correlation matrices}
 lista.corr <- lapply(lista.danych, function(x) rcorr(as.matrix(x))$r)
 lista.corr <- lapply(lista.corr, function(x) {diag(x) <- 0; x})
+print(str(lista.corr))
 
 ```
 ## Including Plots
 
 
 ```{r, echo=FALSE}
+
 col<- colorRampPalette(c("blue", "white", "red"))(20)
 heatmap(x = lista.corr[['relapse']], col = col, symm = TRUE, Rowv = NA)
 ```
 
 ```{r, echo=FALSE}
-col<- colorRampPalette(c("blue", "white", "red"))(20)
-dane=
-heatmap.2(x = lista.corr[['relapse']], col = col, symm = TRUE, Rowv = FLASE, RowSideColors=as.character(as.numeric()))
+library(pheatmap)
+library(RColorBrewer)
+
+# Generte data (modified the mydf slightly)
+col1 <- brewer.pal(12, "Set3")
+mymat <- lista.corr[["relapse"]]
+
+lookup<-unique(dane[,c("abbrev", "category")])
+
+mydf <- data.frame(category=lookup$category)
+row.names(mydf)<-lookup$abbrev
+
+kolejnosc<-colnames(mymat)
+kolejnosc<-kolejnosc[order(match(kolejnosc, lookup$abbrev))]
+#print(kolejnosc[1:20])
+
+mymat<-mymat[kolejnosc, kolejnosc]
+
+# add row annotations
+my_heatmap<-pheatmap(mymat, cluster_cols = F, cluster_rows = F, annotation_row = mydf)
+
+print(my_heatmap)
+
+save_pheatmap_png <- function(x, filename, width=1200, height=1000, res = 150) {
+  png(filename, width = width, height = height, res = res)
+  grid::grid.newpage()
+  grid::grid.draw(x$gtable)
+  dev.off()
+}
+ 
+save_pheatmap_png(my_heatmap, "my_heatmap.png")
+
 ```
 
 ```{r}
