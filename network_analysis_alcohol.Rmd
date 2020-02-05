@@ -61,6 +61,11 @@ lista.danych<-lapply(lista.danych,
                        transpose(dcast(x, abbrev ~ case_id, value.var = "cell_count"), make.names = "abbrev")})
 lista.danych<-lapply(lista.danych, function(x) setDF(x))
 lista.danych <- lapply(lista.danych, clean_data, missing_thresh=3, fill_missing=FALSE, real_zeros=FALSE)
+common.regions <- intersect(intersect(colnames(lista.danych[[1]]), colnames(lista.danych[[2]])),
+                            intersect(colnames(lista.danych[[3]]), colnames(lista.danych[[4]])))
+lista.danych <- lapply(lista.danych, function(x) x[, colnames(x) %in% common.regions])
+
+
 ```
 
 
@@ -79,10 +84,17 @@ lista.corr <- lapply(lista.corr, function(x) {diag(x) <- 0; x})
 ## Including Plots
 
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 col<- colorRampPalette(c("blue", "white", "red"))(20)
 heatmap(x = lista.corr[['relapse']], col = col, symm = TRUE, Rowv = NA)
 ```
+
+```{r, echo=FALSE}
+col<- colorRampPalette(c("blue", "white", "red"))(20)
+dane=
+heatmap.2(x = lista.corr[['relapse']], col = col, symm = TRUE, Rowv = FLASE, RowSideColors=as.character(as.numeric()))
+```
+
 ```{r}
 heatmap(x = lista.corr[['alcohol']], col = col, symm = TRUE)
 
