@@ -20,13 +20,13 @@ dane[,name:=NULL]
 
 parents<-fread("C:/Users/Monik/Documents/GitHub/sredni_sygnal_mozgu/pliki/parents.txt", header = FALSE)
 setnames(parents, c("V1", "V2"), c("abbrev", "parent"))
-dane<-merge(dane, parents, by = "abbrev")
-dane[,is_parent:=FALSE][unique(dane$parent), is_parent:=TRUE]
+dane<-merge(dane, parents, by = "abbrev", sort = FALSE)
+dane[, is_parent:= abbrev %in% unique(dane$parent) ]
 
 ```
 
 ```{r make list}
-dane_wybrane<-dane[depth==4]
+dane_wybrane<-dane[depth==5]
 lista.danych<-split(dane_wybrane, by="group_label", keep.by=FALSE)
 lista.danych<-lapply(lista.danych, 
                      function(x) {
@@ -50,7 +50,7 @@ lista.corr <- lapply(lista.corr, function(x) {diag(x) <- 0; x})
 
 ```{r pressure, echo=FALSE}
 col<- colorRampPalette(c("blue", "white", "red"))(20)
-heatmap(x = lista.corr[['relapse']], col = col, symm = TRUE)
+heatmap(x = lista.corr[['relapse']], col = col, symm = TRUE, Rowv = NA)
 ```
 ```{r}
 heatmap(x = lista.corr[['alcohol']], col = col, symm = TRUE)
